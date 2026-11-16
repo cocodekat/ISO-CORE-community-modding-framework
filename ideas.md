@@ -1,22 +1,66 @@
-abbreviation: ICCMF
+# ICCMF
 
-**I** : Iso
-**C** : Core
-**C** : Community
-**M** : Modding
-**F** : Framework
+**ISO CORE Community Modding Framework**
 
-terminal commands:
+## Abbreviation
 
-```iccmf update   iccmf                               (update iccmf and BepInEx to latest version)```
-```iccmf modlist  add     <mod_name>   <path/to/mod>  (add a mod to modlist```
-```iccmf modlist  update  <mod_name>   <path/to/mod>  (remove an existing mod and replace it with mod at /path/to/mod/)```
-```iccmf modlist  remove  <mod_name>                  (remove a mod)```
-```iccmf create   mod     <mod_name>                  (create a new mod template in current directory)```
+| Letter | Meaning |
+|:---:|---|
+| **I** | Iso |
+| **C** | Core |
+| **C** | Community |
+| **M** | Modding |
+| **F** | Framework |
 
-it will also ship with a mod manager:
+## Terminal Commands
 
-- find community and official mods
-- manage them easily
+### Update
 
+```bash
+iccmf update
+```
 
+Update ICCMF and BepInEx to latest version.
+
+### Modlist
+
+**Add a mod**
+
+```bash
+iccmf modlist add <mod_name> <path/to/mod>
+```
+
+Add a mod to modlist.
+
+**Update a mod**
+
+```bash
+iccmf modlist update <mod_name> <path/to/mod>
+```
+
+Remove an existing mod and replace it with mod at `/path/to/mod/`.
+
+**Remove a mod**
+
+```bash
+iccmf modlist remove <mod_name>
+```
+
+Remove a mod.
+
+### Create
+
+**Create a mod**
+
+```bash
+iccmf create mod <mod_name>
+```
+
+Create a new mod template in current directory.
+
+## Mod Manager
+
+It will also ship with a mod manager:
+
+- Find community and official mods
+- Manage them easily
