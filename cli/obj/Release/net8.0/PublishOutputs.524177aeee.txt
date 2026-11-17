@@ -1,0 +1,5 @@
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.dll
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.deps.json
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.runtimeconfig.json
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.pdb

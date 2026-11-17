@@ -1,0 +1,13 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsoCoreModId>community.isocore.simple-inventory-editor</IsoCoreModId>
+    <IsoCoreModName>Simple Inventory Editor</IsoCoreModName>
+    <IsoCoreModVersion>1.0.0</IsoCoreModVersion>
+    <IsoCoreModEntry>ISOCORE.SimpleInventoryEditor.Mod</IsoCoreModEntry>
+
+    <IsoCoreInventory>true</IsoCoreInventory>
+    <IsoCoreUi>true</IsoCoreUi>
+  </PropertyGroup>
+
+  <Import Project=".iccmf/Sdk/IsoCore.Mod.targets" />
+</Project>

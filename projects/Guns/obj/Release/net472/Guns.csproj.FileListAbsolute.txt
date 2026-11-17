@@ -1,0 +1,10 @@
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/bin/Release/net472/Guns.dll
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/bin/Release/net472/Guns.pdb
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.csproj.AssemblyReference.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.GeneratedMSBuildEditorConfig.editorconfig
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.AssemblyInfoInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.AssemblyInfo.cs
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.csproj.CoreCompileInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/IsoCorePlugin.g.cs
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.dll
+/Users/philip/Desktop/Code/mods/modding-api/projects/Guns/obj/Release/net472/Guns.pdb

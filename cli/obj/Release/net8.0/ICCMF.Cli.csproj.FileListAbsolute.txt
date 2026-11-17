@@ -1,0 +1,14 @@
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.GeneratedMSBuildEditorConfig.editorconfig
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.AssemblyInfoInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.AssemblyInfo.cs
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.csproj.CoreCompileInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/ICCMF.Cli
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/ICCMF.Cli.deps.json
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/ICCMF.Cli.runtimeconfig.json
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/ICCMF.Cli.dll
+/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/ICCMF.Cli.pdb
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.dll
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/refint/ICCMF.Cli.dll
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.pdb
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ICCMF.Cli.genruntimeconfig.cache
+/Users/philip/Desktop/Code/mods/modding-api/cli/obj/Release/net8.0/ref/ICCMF.Cli.dll

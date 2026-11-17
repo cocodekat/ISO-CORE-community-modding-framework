@@ -1,0 +1,87 @@
+<Project>
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <OutputType>Library</OutputType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion Condition="'$(LangVersion)' == ''">7.3</LangVersion>
+
+    <IsoCoreGameDir Condition="'$(IsoCoreGameDir)' == '' and '$(ISOCORE_GAME_DIR)' != ''">$(ISOCORE_GAME_DIR)</IsoCoreGameDir>
+    <IsoCoreGameDir Condition="'$(IsoCoreGameDir)' == '' and '$(OS)' == 'Windows_NT'">$(MSBuildProgramFiles32)/Steam/steamapps/common/ISO-CORE Playtest</IsoCoreGameDir>
+    <IsoCoreGameDir Condition="'$(IsoCoreGameDir)' == ''">$(HOME)/Library/Application Support/Steam/steamapps/common/ISO-CORE Playtest</IsoCoreGameDir>
+    <IsoCoreManagedDir Condition="'$(IsoCoreManagedDir)' == '' and Exists('$(IsoCoreGameDir)/ISO-CORE MacOS Build.app/Contents/Resources/Data/Managed/Assembly-CSharp.dll')">$(IsoCoreGameDir)/ISO-CORE MacOS Build.app/Contents/Resources/Data/Managed</IsoCoreManagedDir>
+    <IsoCoreManagedDir Condition="'$(IsoCoreManagedDir)' == ''">$(IsoCoreGameDir)/ISO CORE_Data/Managed</IsoCoreManagedDir>
+    <IsoCoreBepInExDir Condition="'$(IsoCoreBepInExDir)' == ''">$(IsoCoreGameDir)/BepInEx/core</IsoCoreBepInExDir>
+
+    <DefineConstants Condition="'$(IsoCoreInventory)' == 'true'">$(DefineConstants);ISOCORE_INVENTORY</DefineConstants>
+    <DefineConstants Condition="'$(IsoCoreUi)' == 'true'">$(DefineConstants);ISOCORE_UI</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net472" Version="1.0.3" PrivateAssets="all" />
+    <Compile Include="$(MSBuildThisFileDirectory)ModContext.cs" Link="SDK/ModContext.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)AssetsApi.cs" Link="SDK/AssetsApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ContentApi.cs" Link="SDK/ContentApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CombatApi.cs" Link="SDK/CombatApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)PathfindingApi.cs" Link="SDK/PathfindingApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)WorldApi.cs" Link="SDK/WorldApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)InventoryApi.cs" Link="SDK/InventoryApi.cs"
+             Condition="'$(IsoCoreInventory)' == 'true'" />
+    <Compile Include="$(MSBuildThisFileDirectory)MenuApi.cs" Link="SDK/MenuApi.cs"
+             Condition="'$(IsoCoreUi)' == 'true'" />
+
+    <Reference Include="BepInEx" HintPath="$(IsoCoreBepInExDir)/BepInEx.dll" Private="false" />
+    <Reference Include="0Harmony" HintPath="$(IsoCoreBepInExDir)/0Harmony.dll" Private="false" />
+    <Reference Include="Assembly-CSharp" HintPath="$(IsoCoreManagedDir)/Assembly-CSharp.dll" Private="false" />
+    <Reference Include="Unity.InputSystem" HintPath="$(IsoCoreManagedDir)/Unity.InputSystem.dll" Private="false"
+               Condition="Exists('$(IsoCoreManagedDir)/Unity.InputSystem.dll')" />
+    <Reference Include="Unity.TextMeshPro" HintPath="$(IsoCoreManagedDir)/Unity.TextMeshPro.dll" Private="false"
+               Condition="Exists('$(IsoCoreManagedDir)/Unity.TextMeshPro.dll')" />
+    <_IsoCoreUnityAssembly Include="$(IsoCoreManagedDir)/UnityEngine*.dll" />
+    <Reference Include="@(_IsoCoreUnityAssembly)" Private="false" />
+    <EmbeddedResource Include="Assets/**/*.png" />
+  </ItemGroup>
+
+  <Target Name="ValidateIsoCoreMod" BeforeTargets="ResolveAssemblyReferences">
+    <Error Condition="!Exists('$(IsoCoreManagedDir)/Assembly-CSharp.dll')"
+           Text="ISO-CORE game references were not found at $(IsoCoreManagedDir). Set ISOCORE_GAME_DIR to the Steam game folder." />
+    <Error Condition="!Exists('$(IsoCoreBepInExDir)/BepInEx.dll') or !Exists('$(IsoCoreBepInExDir)/0Harmony.dll')"
+           Text="BepInEx 5 was not found at $(IsoCoreBepInExDir). Install BepInEx into ISO-CORE before building." />
+  </Target>
+
+  <Target Name="GenerateIsoCorePlugin" BeforeTargets="CoreCompile">
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(IsoCoreModId)', '^[a-z0-9]+([._-][a-z0-9]+)*$'))"
+           Text="Set IsoCoreModId to a unique lowercase ID such as yourname.isocore.mymod." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(IsoCoreModName)', '^[\p{L}\p{N}][\p{L}\p{N} _.,+()!-]{0,79}$'))"
+           Text="Set IsoCoreModName to a display name using letters, digits, spaces or simple punctuation." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(IsoCoreModVersion)', '^[0-9]{1,9}\.[0-9]{1,9}\.[0-9]{1,9}$'))"
+           Text="Set IsoCoreModVersion to three numeric parts such as 1.0.0." />
+    <Error Condition="!$([System.Text.RegularExpressions.Regex]::IsMatch('$(IsoCoreModEntry)', '^[A-Za-z_][A-Za-z0-9_]*(\.[A-Za-z_][A-Za-z0-9_]*)*$'))"
+           Text="Set IsoCoreModEntry to the namespace and class implementing ISOCORE.ModSdk.IMod." />
+
+    <PropertyGroup>
+      <_IsoCoreGeneratedPlugin>$(IntermediateOutputPath)IsoCorePlugin.g.cs</_IsoCoreGeneratedPlugin>
+    </PropertyGroup>
+    <ItemGroup>
+      <_IsoCorePluginLine Include="// Generated by the ISO-CORE Mod SDK." />
+      <_IsoCorePluginLine Include="namespace ISOCORE.Generated" />
+      <_IsoCorePluginLine Include="{" />
+      <_IsoCorePluginLine Include="    [global::BepInEx.BepInPlugin(&quot;$(IsoCoreModId)&quot;, &quot;$(IsoCoreModName)&quot;, &quot;$(IsoCoreModVersion)&quot;)]" />
+      <_IsoCorePluginLine Include="    public sealed class Plugin : global::BepInEx.BaseUnityPlugin" />
+      <_IsoCorePluginLine Include="    {" />
+      <_IsoCorePluginLine Include="        private void Awake()" />
+      <_IsoCorePluginLine Include="        {" />
+      <_IsoCorePluginLine Include="            global::ISOCORE.ModSdk.IMod entry = new global::$(IsoCoreModEntry)()%3B" />
+      <_IsoCorePluginLine Include="            entry.Load(new global::ISOCORE.ModSdk.ModContext(gameObject, Logger, Config, &quot;$(IsoCoreModId)&quot;, entry.GetType().Assembly))%3B" />
+      <_IsoCorePluginLine Include="        }" />
+      <_IsoCorePluginLine Include="    }" />
+      <_IsoCorePluginLine Include="}" />
+    </ItemGroup>
+    <MakeDir Directories="$(IntermediateOutputPath)" />
+    <WriteLinesToFile File="$(_IsoCoreGeneratedPlugin)" Lines="@(_IsoCorePluginLine)" Overwrite="true" WriteOnlyWhenDifferent="true" />
+    <ItemGroup>
+      <Compile Include="$(_IsoCoreGeneratedPlugin)" />
+      <FileWrites Include="$(_IsoCoreGeneratedPlugin)" />
+    </ItemGroup>
+  </Target>
+</Project>

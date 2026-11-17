@@ -1,0 +1,9 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <IsoCoreModId>community.isocore.guns</IsoCoreModId>
+    <IsoCoreModName>Guns</IsoCoreModName>
+    <IsoCoreModVersion>1.0.0</IsoCoreModVersion>
+    <IsoCoreModEntry>Guns.Mod</IsoCoreModEntry>
+  </PropertyGroup>
+  <Import Project=".iccmf/Sdk/IsoCore.Mod.targets" />
+</Project>
