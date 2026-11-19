@@ -24,7 +24,12 @@ iccmf modlist add <mod_name> <path/to/mod>
 iccmf modlist update <mod_name> <path/to/mod>
 iccmf modlist remove <mod_name>
 iccmf create mod <mod_name>
+iccmf uninstall [--yes]
 ```
+
+`uninstall` removes ICCMF from the computer: every mod installed under `BepInEx/plugins/ICCMF/`,
+the mod list, and the `iccmf` tool itself. It asks for confirmation first (`--yes` skips the
+question). BepInEx, the game, and your mod source projects are left alone.
 
 `modlist add` builds source projects when necessary and installs each mod into its own managed folder under `BepInEx/plugins/ICCMF/`. `modlist update` safely stages and replaces that installed folder, while `modlist remove` removes it from both the game and the registry. A direct DLL or packaged mod directory can also be supplied. Set `ISOCORE_GAME_DIR` when the game is outside the normal Steam location.
 
@@ -60,7 +65,7 @@ If you rename `MyMod.Mod` in C#, update `IsoCoreModEntry` too. Install it with
 - `mod.Log` and `mod.Config` expose BepInEx logging and persistent settings.
 - `mod.AddComponent<T>()` attaches a Unity component for behavior that needs the game loop.
 - `mod.Start<T>()` starts a persistent `ModComponent` after the first scene load. The component
-  automatically receives `Assets`, `Content`, `Combat`, `Paths`, `World`, `Log`, and `Config`
+  automatically receives `Assets`, `Content`, `Combat`, `Audio`, `Paths`, `World`, `Log`, and `Config`
   (plus enabled optional APIs); guards lifecycle callbacks;
   records diagnostics; and releases subscriptions registered through its helper methods.
 - `mod.Assets` loads embedded PNGs from `Assets/` with pixel-perfect filtering. A matching file
@@ -68,19 +73,21 @@ If you rename `MyMod.Mod` in C#, update `IsoCoreModEntry` too. Install it with
 - `mod.Content` registers items, placeables, and recipes. IDs are stable and automatically derived
   from the mod ID and item key, with collision checks instead of manually chosen enum values.
 - `mod.Combat` provides damageable objects, reusable attacks, custom item weapons, blast damage,
-  and visible projectiles.
-- `mod.Paths` provides bounded A* and attachable terrain-aware agents. `mod.World` combines sprites,
+  and visible projectiles. Weapons can play fire, impact and empty-magazine sounds.
+- `mod.Audio` plays sounds: a few built-in synthesized defaults, or your own `.wav`, `.ogg` and
+  `.mp3` files. Sounds support `Play`, `Stop`, `Pause`, `Resume`, volume, pitch and looping.
+- `mod.Paths` provides bounded A\* and attachable terrain-aware agents. `mod.World` combines sprites,
   health, pathfinding, attacks, damage, and projectiles into a short actor builder.
 - `mod.Entities` defines animated custom entities, melee and ranged attacks, hazards, weighted
   loot, selective vaulting, defense breaking, groups, daylight damage and scheduled night raids.
-  See `projects/ZombieSurvival/` for five concise examples.
 - Add `<IsoCoreInventory>true</IsoCoreInventory>` to the project's property group to get `mod.Inventory`. It exposes the complete item catalog (including availability and icons), native inventory lifecycle and slot-click events, slot snapshots, and validated slot writes. The helper is compiled into the mod DLL.
 - Add `<IsoCoreUi>true</IsoCoreUi>` to get `mod.Ui`, a runtime uGUI menu builder with resolution scaling, ISO-CORE font detection, themed labels, buttons and inputs, icon-and-metadata list rows, responsive rows and columns, isolated overlays, and correctly wired scroll lists. Create menus after the first scene has loaded so the game's startup transition does not remove them.
 - The project can also call Unity, Harmony, and ISO-CORE's game classes directly using the references supplied by the SDK.
 
 ### Custom content and combat
 
-Place PNG files in the generated project's `Assets/` folder. ICCMF embeds them automatically.
+Place PNG files (and `.wav`, `.ogg` or `.mp3` sounds) in the generated project's `Assets/` folder.
+ICCMF embeds them automatically.
 The SDK assigns deterministic IDs, publishes the game assets and prefabs, and supplies custom
 names everywhere the base game displays them:
 
@@ -114,12 +121,61 @@ Combat.Weapon(pistol)
     .Range(8f)
     .Cooldown(.32f)
     .Projectile(Assets.Sprite("tracer", 48f), speed: 24f)
+    .FireSound(Audio.Default(DefaultSound.Pistol))
+    .EmptySound(Audio.Default(DefaultSound.EmptyClick))
     .Register();
 ```
 
 The automatic ID comes from `<mod-id>:<key>`, so it is stable between builds and different mods
 can safely use the same short key. `.WithId(number)` remains available when compatibility with an
 existing save or old mod requires a specific ID.
+
+### Sound
+
+`Audio` creates `Sound` objects. Nothing is loaded or created in the scene until a sound is
+first played, so building sounds during startup is safe.
+
+```csharp
+// Built-in sounds (synthesized in code, no audio files needed):
+// Pistol, Smg, Rifle, Sniper, Rocket, Explosion, EmptyClick
+Sound shot = Audio.Default(DefaultSound.Rifle);
+
+// Your own files. .wav loads immediately; .ogg and .mp3 load asynchronously
+// (the sound stays silent until loading finishes).
+Sound boom = Audio.Load("boom.wav");
+boom.Volume = 0.8f;                       // 0 to 1
+boom.Pitch = 1.1f;
+boom.Loop = false;
+
+boom.Play();     // starts from the beginning
+boom.Pause();
+boom.Resume();
+boom.Stop();
+boom.Fire();     // overlapping one-shot; does not cut itself off
+```
+
+Put your own `.wav`, `.ogg` or `.mp3` files in the project's `Assets/` folder next to the PNGs.
+They are embedded in the mod DLL, so installing the DLL is enough. `Audio.Load("boom.wav")` looks
+for the file in this order:
+
+1. An absolute path, or `Audio.Folder/<path>` if you set the optional `Audio.Folder`.
+2. `BepInEx/config/<mod-id>.Assets/<path>`, which lets players replace a sound without recompiling.
+3. The copy embedded from `Assets/`. Subfolders work: `Audio.Load("sfx/boom.wav")`.
+
+If the file is not found anywhere, the error is logged and the sound stays silent.
+
+Use `Play`, `Pause`, `Resume` and `Stop` for music, loops, and anything you need to control.
+Use `Fire` for repeated effects such as gunshots: it rotates through several voices and adds
+slight pitch variation, so rapid fire overlaps naturally instead of restarting.
+
+Weapons accept three optional sounds:
+
+- `.FireSound(sound)` plays each time the weapon fires.
+- `.ImpactSound(sound)` plays when the projectile lands (for example an explosion).
+- `.EmptySound(sound)` plays once per trigger pull when the player has no ammo.
+
+Sounds are 2D, so they are audible regardless of where the camera is. An existing `AudioClip`
+can be wrapped with `Audio.FromClip(clip)`.
 
 ### Actors, pathfinding, damage, and projectiles
 
@@ -218,6 +274,10 @@ the input updates the state. `ModComponent` automatically unsubscribes callbacks
 `WhenInventoryOpened`, `WhenInventoryClosed`, and `WhenSlotClicked`. Set
 `mod.Diagnostics.Verbose = false` to hide lifecycle trace messages; errors remain enabled.
 
+A failure inside `OnModStart` is caught and logged as `<Name> failed during startup`, and
+everything after the failing line is skipped. If content such as items or recipes goes missing,
+search `BepInEx/LogOutput.log` for that message.
+
 ### Direct inventory access
 
 Slots are live handles. Numbered access is one-based, matching the slot numbers shown to players:
@@ -242,6 +302,9 @@ and its quantity together, because assigning `Id` preserves the slot's current q
 
 ## Build the inventory example
 
+The example projects live in the repository under `projects/` and are not part of the release
+archives. To build one from a repository checkout:
+
 ```sh
 ./projects/InventoryEditor/build.sh
 ```
@@ -250,3 +313,32 @@ Its DLL is under `projects/InventoryEditor/bin/Release/net472/`. In `Mod.cs`, th
 `AddPersistentComponentAfterSceneLoad` so it does not need to manage Unity scene events or a
 persistent host itself. The example uses the SDK's simple controls and menu builder while the
 inventory helper handles reading, validating, writing, and refreshing native slots.
+
+## Building a release
+
+Releases contain only the `iccmf` command-line tool and the SDK it uses to create projects. The
+example projects are not bundled or built. Each script packs `cli/ICCMF.Cli.csproj` with the .NET 8
+SDK and writes a zip under `dist/`. You can build either release from macOS:
+
+```sh
+./build-macos-release.sh      # dist/macos/ICCMF-<version>-macos.zip
+./build-windows-release.sh    # dist/windows/ICCMF-<version>-windows.zip
+```
+
+On Windows, `./build-windows-release.ps1` produces the same Windows archive. The macOS archive
+is installed with `install-cli.sh` and the Windows archive with `install-cli.bat`. The version
+number is set at the top of each build script and in the two installers; update all of them
+together when releasing a new version. Both scripts accept `--output <dir>` (or
+`-OutputDirectory` for the PowerShell script) to change where the archive is written.
+
+Do not commit `dist/`, `bin/`, or `obj/` folders.
+
+## Working on the SDK itself
+
+The SDK source lives in `Sdk/`. Each generated project gets its own private copy under
+`.iccmf/Sdk/` and compiles only that copy, so changes to `Sdk/` affect new projects only; copy
+updated files into an existing project's `.iccmf/Sdk/` folder to use them there.
+
+`Sdk/IsoCore.Mod.targets` lists every SDK source file explicitly. When adding a new SDK file
+(for example `SoundApi.cs`), add a matching `<Compile Include=... />` line to that file, or the
+file will be silently left out of the build and its types will not be found.

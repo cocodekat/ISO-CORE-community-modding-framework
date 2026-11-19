@@ -19,6 +19,7 @@
     <EmbeddedResource Include="../Sdk/ContentApi.cs" LogicalName="ICCMF.Sdk.ContentApi.cs" />
     <EmbeddedResource Include="../Sdk/EntityApi.cs" LogicalName="ICCMF.Sdk.EntityApi.cs" />
     <EmbeddedResource Include="../Sdk/CombatApi.cs" LogicalName="ICCMF.Sdk.CombatApi.cs" />
+    <EmbeddedResource Include="../Sdk/SoundApi.cs" LogicalName="ICCMF.Sdk.SoundApi.cs" />
     <EmbeddedResource Include="../Sdk/PathfindingApi.cs" LogicalName="ICCMF.Sdk.PathfindingApi.cs" />
     <EmbeddedResource Include="../Sdk/WorldApi.cs" LogicalName="ICCMF.Sdk.WorldApi.cs" />
     <EmbeddedResource Include="../Sdk/IsoCore.Mod.targets" LogicalName="ICCMF.Sdk.IsoCore.Mod.targets" />

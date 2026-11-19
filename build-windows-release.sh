@@ -48,11 +48,11 @@ NUPKG="$ROOT/dist/ICCMF.Cli.$VERSION.nupkg"
 [ -f "$NUPKG" ] || { printf '%s\n' "Expected package not found: $NUPKG" >&2; exit 2; }
 
 # Sanity check: is the SDK packed inside the CLI package? (A .nupkg is a zip file.)
-if unzip -l "$NUPKG" 2>/dev/null | grep -q "SoundApi.cs"; then
-  printf '%s\n' "Check: SDK (including SoundApi.cs) is inside the CLI package."
+if unzip -p "$NUPKG" 'tools/*/any/ICCMF.Cli.dll' 2>/dev/null | grep -aq "ICCMF.Sdk.SoundApi.cs"; then
+  printf '%s\n' "Check: SDK (including SoundApi.cs) is embedded in the CLI."
 else
-  printf '%s\n' "WARNING: SoundApi.cs was not found inside $NUPKG." >&2
-  printf '%s\n' "         Either the master Sdk/ is missing it, or the CLI project does not pack Sdk/." >&2
+  printf '%s\n' "WARNING: SoundApi.cs is not embedded in the CLI package." >&2
+  printf '%s\n' "         Add it to cli/ICCMF.Cli.csproj (EmbeddedResource) and to ExtractSdk in cli/Program.cs." >&2
 fi
 
 # ---- Stage the release folder ----

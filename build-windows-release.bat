@@ -36,15 +36,24 @@ if (-not (Test-Path $Nupkg)) { throw "Expected package not found: $Nupkg" }
 # Sanity check: is the SDK packed inside the CLI package? (A .nupkg is a zip file.)
 Add-Type -AssemblyName System.IO.Compression.FileSystem
 $Archive = [System.IO.Compression.ZipFile]::OpenRead($Nupkg)
+$HasSound = $false
 try {
-    $HasSound = $Archive.Entries | Where-Object { $_.FullName -like "*SoundApi.cs" } | Select-Object -First 1
+    $Entry = $Archive.Entries | Where-Object { $_.FullName -like "tools/*/any/ICCMF.Cli.dll" } | Select-Object -First 1
+    if ($Entry) {
+        $Reader = $Entry.Open()
+        try {
+            $Memory = New-Object System.IO.MemoryStream
+            $Reader.CopyTo($Memory)
+            $HasSound = [System.Text.Encoding]::ASCII.GetString($Memory.ToArray()).Contains('ICCMF.Sdk.SoundApi.cs')
+        } finally { $Reader.Dispose() }
+    }
 } finally {
     $Archive.Dispose()
 }
 if ($HasSound) {
-    Write-Host "Check: SDK (including SoundApi.cs) is inside the CLI package."
+    Write-Host "Check: SDK (including SoundApi.cs) is embedded in the CLI."
 } else {
-    Write-Warning "SoundApi.cs was not found inside $Nupkg. Either the master Sdk\ is missing it, or the CLI project does not pack Sdk\."
+    Write-Warning "SoundApi.cs is not embedded in the CLI package. Add it to cli\ICCMF.Cli.csproj (EmbeddedResource) and to ExtractSdk in cli\Program.cs."
 }
 
 # ---- Stage the release folder ----

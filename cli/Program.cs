@@ -44,6 +44,7 @@ internal static class Program
             "update" => Update(args),
             "modlist" => ModList(args),
             "create" => Create(args),
+            "uninstall" => SelfUninstaller.Run(args),
             _ => throw new CliException($"Unknown command '{args[0]}'. Run 'iccmf --help' for usage.", 2)
         };
     }
@@ -223,7 +224,7 @@ internal static class Program
         Assembly assembly = typeof(Program).Assembly;
         string[] files = { "AssetsApi.cs", "CombatApi.cs", "ContentApi.cs", "EntityApi.cs",
             "InventoryApi.cs", "IsoCore.Mod.targets", "MenuApi.cs", "ModContext.cs",
-            "PathfindingApi.cs", "WorldApi.cs" };
+            "PathfindingApi.cs", "WorldApi.cs", "SoundApi.cs" };
         foreach (string file in files)
         {
             string resourceName = "ICCMF.Sdk." + file;
@@ -335,6 +336,7 @@ internal static class Program
         Console.WriteLine("  iccmf modlist update <mod_name> <path/to/mod>");
         Console.WriteLine("  iccmf modlist remove <mod_name>");
         Console.WriteLine("  iccmf create mod <mod_name>");
+        Console.WriteLine("  iccmf uninstall [--yes]");
         Console.WriteLine();
         Console.WriteLine("Environment:");
         Console.WriteLine("  ICCMF_CONFIG_DIR  Override the directory containing modlist.json.");
@@ -475,7 +477,7 @@ internal static class ModInstaller
         }
     }
 
-    private static string FindDotnet()
+    internal static string FindDotnet()
     {
         string configured = Environment.GetEnvironmentVariable("DOTNET_BIN")?.Trim() ?? string.Empty;
         if (configured.Length > 0 && File.Exists(configured)) return configured;
@@ -485,7 +487,7 @@ internal static class ModInstaller
         return "dotnet";
     }
 
-    private static string ManagedRoot()
+    internal static string ManagedRoot()
     {
         string game = ResolveGameDirectory();
         string plugins = Path.Combine(game, "BepInEx", "plugins");
