@@ -1,0 +1,20 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2010/07/nuspec.xsd">
+  <metadata>
+    <id>ICCMF.Cli</id>
+    <version>0.5.2</version>
+    <authors>ISO CORE Community</authors>
+    <description>ISO CORE Community Modding Framework command-line tool.</description>
+    <packageTypes>
+      <packageType name="DotnetTool" />
+    </packageTypes>
+    <repository type="git" />
+  </metadata>
+  <files>
+    <file src="/Users/philip/Desktop/Code/mods/modding-api/cli/obj/DotnetToolSettings.xml" target="tools/net8.0/any/DotnetToolSettings.xml" />
+    <file src="/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.dll" target="tools/net8.0/any/ICCMF.Cli.dll" />
+    <file src="/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.deps.json" target="tools/net8.0/any/ICCMF.Cli.deps.json" />
+    <file src="/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.runtimeconfig.json" target="tools/net8.0/any/ICCMF.Cli.runtimeconfig.json" />
+    <file src="/Users/philip/Desktop/Code/mods/modding-api/cli/bin/Release/net8.0/publish/ICCMF.Cli.pdb" target="tools/net8.0/any/ICCMF.Cli.pdb" />
+  </files>
+</package>

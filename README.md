@@ -10,6 +10,9 @@ Install the command-line tool once:
 ./install-cli.sh
 ```
 
+On Windows, extract the release archive and run `install-cli.bat`. The complete setup and project
+workflow is in [WINDOWS-GUIDE.md](WINDOWS-GUIDE.md).
+
 The installer checks `PATH` first and then `$HOME/.dotnet/dotnet`. You can override detection with `DOTNET_BIN=/path/to/dotnet`.
 
 The **ISO CORE Community Modding Framework** command is then available as `iccmf`:
@@ -68,6 +71,9 @@ If you rename `MyMod.Mod` in C#, update `IsoCoreModEntry` too. Install it with
   and visible projectiles.
 - `mod.Paths` provides bounded A* and attachable terrain-aware agents. `mod.World` combines sprites,
   health, pathfinding, attacks, damage, and projectiles into a short actor builder.
+- `mod.Entities` defines animated custom entities, melee and ranged attacks, hazards, weighted
+  loot, selective vaulting, defense breaking, groups, daylight damage and scheduled night raids.
+  See `projects/ZombieSurvival/` for five concise examples.
 - Add `<IsoCoreInventory>true</IsoCoreInventory>` to the project's property group to get `mod.Inventory`. It exposes the complete item catalog (including availability and icons), native inventory lifecycle and slot-click events, slot snapshots, and validated slot writes. The helper is compiled into the mod DLL.
 - Add `<IsoCoreUi>true</IsoCoreUi>` to get `mod.Ui`, a runtime uGUI menu builder with resolution scaling, ISO-CORE font detection, themed labels, buttons and inputs, icon-and-metadata list rows, responsive rows and columns, isolated overlays, and correctly wired scroll lists. Create menus after the first scene has loaded so the game's startup transition does not remove them.
 - The project can also call Unity, Harmony, and ISO-CORE's game classes directly using the references supplied by the SDK.

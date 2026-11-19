@@ -23,8 +23,10 @@
     <Compile Include="$(MSBuildThisFileDirectory)AssetsApi.cs" Link="SDK/AssetsApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)ContentApi.cs" Link="SDK/ContentApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CombatApi.cs" Link="SDK/CombatApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)SoundApi.cs" Link="SDK/SoundApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)PathfindingApi.cs" Link="SDK/PathfindingApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)WorldApi.cs" Link="SDK/WorldApi.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)EntityApi.cs" Link="SDK/EntityApi.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)InventoryApi.cs" Link="SDK/InventoryApi.cs"
              Condition="'$(IsoCoreInventory)' == 'true'" />
     <Compile Include="$(MSBuildThisFileDirectory)MenuApi.cs" Link="SDK/MenuApi.cs"

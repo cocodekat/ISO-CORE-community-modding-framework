@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v8.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v8.0": {
+      "ICCMF.Cli/0.5.2": {
+        "runtime": {
+          "ICCMF.Cli.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "ICCMF.Cli/0.5.2": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}

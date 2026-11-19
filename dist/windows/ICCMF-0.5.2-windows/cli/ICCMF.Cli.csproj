@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <PackAsTool>true</PackAsTool>
+    <ToolCommandName>iccmf</ToolCommandName>
+    <PackageId>ICCMF.Cli</PackageId>
+    <Version>0.5.2</Version>
+    <Authors>ISO CORE Community</Authors>
+    <Description>ISO CORE Community Modding Framework command-line tool.</Description>
+    <PackageOutputPath>../dist</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="../Sdk/InventoryApi.cs" LogicalName="ICCMF.Sdk.InventoryApi.cs" />
+    <EmbeddedResource Include="../Sdk/AssetsApi.cs" LogicalName="ICCMF.Sdk.AssetsApi.cs" />
+    <EmbeddedResource Include="../Sdk/ContentApi.cs" LogicalName="ICCMF.Sdk.ContentApi.cs" />
+    <EmbeddedResource Include="../Sdk/EntityApi.cs" LogicalName="ICCMF.Sdk.EntityApi.cs" />
+    <EmbeddedResource Include="../Sdk/CombatApi.cs" LogicalName="ICCMF.Sdk.CombatApi.cs" />
+    <EmbeddedResource Include="../Sdk/PathfindingApi.cs" LogicalName="ICCMF.Sdk.PathfindingApi.cs" />
+    <EmbeddedResource Include="../Sdk/WorldApi.cs" LogicalName="ICCMF.Sdk.WorldApi.cs" />
+    <EmbeddedResource Include="../Sdk/IsoCore.Mod.targets" LogicalName="ICCMF.Sdk.IsoCore.Mod.targets" />
+    <EmbeddedResource Include="../Sdk/MenuApi.cs" LogicalName="ICCMF.Sdk.MenuApi.cs" />
+    <EmbeddedResource Include="../Sdk/ModContext.cs" LogicalName="ICCMF.Sdk.ModContext.cs" />
+  </ItemGroup>
+</Project>

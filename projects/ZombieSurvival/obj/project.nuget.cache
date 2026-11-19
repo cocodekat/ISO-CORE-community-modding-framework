@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "dgSpecHash": "nn/ofLwe8hk=",
+  "success": true,
+  "projectFilePath": "/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/ZombieSurvival.csproj",
+  "expectedPackageFiles": [
+    "/Users/philip/.nuget/packages/microsoft.netframework.referenceassemblies/1.0.3/microsoft.netframework.referenceassemblies.1.0.3.nupkg.sha512",
+    "/Users/philip/.nuget/packages/microsoft.netframework.referenceassemblies.net472/1.0.3/microsoft.netframework.referenceassemblies.net472.1.0.3.nupkg.sha512"
+  ],
+  "logs": [
+    {
+      "code": "NU1900",
+      "level": "Warning",
+      "warningLevel": 1,
+      "message": "Error occurred while getting package vulnerability data: The type initializer for 'System.Net.CookieContainer' threw an exception."
+    }
+  ]
+}

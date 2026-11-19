@@ -1,0 +1,10 @@
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.csproj.AssemblyReference.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.GeneratedMSBuildEditorConfig.editorconfig
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.AssemblyInfoInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.AssemblyInfo.cs
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.csproj.CoreCompileInputs.cache
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/IsoCorePlugin.g.cs
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/bin/Release/net472/ZombieSurvival.dll
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/bin/Release/net472/ZombieSurvival.pdb
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.dll
+/Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/obj/Release/net472/ZombieSurvival.pdb

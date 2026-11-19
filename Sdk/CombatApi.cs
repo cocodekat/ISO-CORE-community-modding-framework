@@ -15,6 +15,8 @@ namespace ISOCORE.ModSdk
         private static readonly FieldInfo HealthDisplayTarget =
             AccessTools.Field(typeof(DisplayPlayerHealth), "playerHurt");
         private const float MobPickRadius = 1.0f;
+        private const string DamageableTypeName = "ISOCORE.ModSdk.Damageable";
+        private const string EntityRegistryKey = "ISOCORE.ModSdk.LiveEntityObjects.v1";
         private readonly Dictionary<Items, WeaponDefinition> _weapons =
             new Dictionary<Items, WeaponDefinition>();
         private readonly ManualLogSource _log;
@@ -42,12 +44,30 @@ namespace ISOCORE.ModSdk
             return damageable;
         }
 
+        // SDK source is compiled into every mod, so normal static fields are private to that
+        // mod's assembly. AppDomain data gives all ICCMF mods one small, shared list containing
+        // only Unity GameObjects (a type they all agree on).
+        internal static void RegisterEntity(GameObject entity)
+        {
+            if (entity == null) return;
+            List<GameObject> entities = SharedEntities();
+            if (!entities.Contains(entity)) entities.Add(entity);
+        }
+
+        internal static void UnregisterEntity(GameObject entity)
+        {
+            if (entity == null) return;
+            SharedEntities().Remove(entity);
+        }
+
         public DamageResult Damage(GameObject target, int amount, GameObject source = null)
         {
             if (target == null || amount <= 0) return DamageResult.Missed;
             Damageable custom = target.GetComponentInParent<Damageable>() ??
                 target.GetComponentInChildren<Damageable>();
             if (custom != null) return custom.TakeDamage(amount, source);
+            DamageResult foreignResult;
+            if (TryDamageForeign(target, amount, source, out foreignResult)) return foreignResult;
 
             GameObject player = Main.Player;
             if (player != null && (target == player || target.transform.IsChildOf(player.transform)))
@@ -83,6 +103,8 @@ namespace ISOCORE.ModSdk
             var targets = new HashSet<GameObject>();
             foreach (Damageable value in UnityEngine.Object.FindObjectsOfType<Damageable>())
                 targets.Add(value.gameObject);
+            foreach (MonoBehaviour value in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>())
+                if (IsForeignDamageable(value)) targets.Add(value.gameObject);
             foreach (Hurt value in UnityEngine.Object.FindObjectsOfType<Hurt>())
                 targets.Add(value.gameObject);
             foreach (GameObject target in targets)
@@ -160,13 +182,20 @@ namespace ISOCORE.ModSdk
             if (weapon.Ammo != null)
             {
                 Storage inventory = PlayerInventory.inventory;
-                if (inventory == null || inventory.GetTotalItemAmount(weapon.Ammo.GameId) <= 0) return true;
+                if (inventory == null || inventory.GetTotalItemAmount(weapon.Ammo.GameId) <= 0)
+                {
+                    // Dry-fire click (only once per trigger pull, not every frame).
+                    if (pressed) weapon.EmptySound?.Fire();
+                    return true;
+                }
                 if (inventory.Get(new ItemStack(weapon.Ammo.GameId, 1)).amount != 1) return true;
             }
 
             attack.hitRateTimer = weapon.Cooldown;
+            weapon.FireSound?.Fire();
             Action impact = delegate
             {
+                weapon.ImpactSound?.Fire();
                 DamageResult result = Damage(target, weapon.Damage, Main.Player);
                 weapon.OnHit?.Invoke(new AttackHit(weapon.Item, target, start, end, result));
                 if (weapon.BlastRadius > 0f)
@@ -184,9 +213,25 @@ namespace ISOCORE.ModSdk
 
         private static GameObject ResolveTarget(out Vector3 end)
         {
+            // Custom entities do not need to participate in the game's native selection system.
+            // Prefer their visible sprite under the mouse before the terrain raycast selects a
+            // tree, floor tile or wall behind them.
+            GameObject cursorCustom = FindCustomUnderCursor();
+            if (cursorCustom != null)
+            {
+                end = cursorCustom.transform.position + Vector3.up * .18f;
+                return cursorCustom;
+            }
+
             // 1. Whatever the game already has selected under the cursor.
             if (Main.selected != null)
             {
+                GameObject selectedCustom = FindCustomObject(Main.selected);
+                if (selectedCustom != null)
+                {
+                    end = selectedCustom.transform.position + Vector3.up * .18f;
+                    return selectedCustom;
+                }
                 Mob selectedMob = Main.selected.GetComponentInParent<Mob>();
                 if (selectedMob != null)
                 {
@@ -221,12 +266,177 @@ namespace ISOCORE.ModSdk
                     return nearest.gameObject;
                 }
 
+                GameObject custom = FindCustomNear(end, MobPickRadius);
+                if (custom != null)
+                {
+                    end = custom.transform.position + Vector3.up * .18f;
+                    return custom;
+                }
+
                 if (WorldGeneration.generator.loadedObjects.TryGetValue(cell, out GameObject value)) return value;
                 if (WorldGeneration.generator.loadedObjects.TryGetValue(cell + new Vector3Int(0, 0, 1), out value))
                     return value;
             }
             end = Vector3.zero;
             return null;
+        }
+
+        private static GameObject FindCustomUnderCursor()
+        {
+            // Input.mousePosition is valid even when ISO-CORE has not yet switched its own
+            // control-mode flag back to Keyboard. Gating on that flag made registered entities
+            // impossible to aim at after some controller/menu interactions.
+            if (Camera.main == null) return null;
+            Vector2 mouse = Input.mousePosition;
+            GameObject best = null;
+            float bestScore = float.PositiveInfinity;
+            var seen = new HashSet<GameObject>();
+            foreach (GameObject value in LiveSharedEntities())
+                ConsiderCursorTarget(value, mouse, seen, ref best, ref bestScore);
+            foreach (Damageable value in UnityEngine.Object.FindObjectsOfType<Damageable>())
+                ConsiderCursorTarget(value == null || value.IsDead ? null : value.gameObject,
+                    mouse, seen, ref best, ref bestScore);
+            foreach (MonoBehaviour value in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>())
+                if (IsForeignDamageable(value) && IsAlive(value))
+                    ConsiderCursorTarget(value.gameObject, mouse, seen, ref best, ref bestScore);
+            return best;
+        }
+
+        private static void ConsiderCursorTarget(GameObject target, Vector2 mouse,
+            HashSet<GameObject> seen, ref GameObject best, ref float bestScore)
+        {
+            if (target == null || !seen.Add(target) || target == Main.Player ||
+                (Main.Player != null && target.transform.IsChildOf(Main.Player.transform))) return;
+            SpriteRenderer renderer = target.GetComponentInChildren<SpriteRenderer>();
+            if (renderer == null || !renderer.enabled || !renderer.gameObject.activeInHierarchy) return;
+            Sprite sprite = renderer.sprite;
+            if (sprite == null) return;
+            Bounds bounds = sprite.bounds;
+            Vector3 center = Camera.main.WorldToScreenPoint(renderer.transform.TransformPoint(bounds.center));
+            if (center.z <= 0f) return;
+            Vector2 min = new Vector2(float.PositiveInfinity, float.PositiveInfinity);
+            Vector2 max = new Vector2(float.NegativeInfinity, float.NegativeInfinity);
+            for (int i = 0; i < 4; i++)
+            {
+                Vector3 corner = new Vector3((i & 1) == 0 ? bounds.min.x : bounds.max.x,
+                    (i & 2) == 0 ? bounds.min.y : bounds.max.y, bounds.center.z);
+                Vector2 screen = Camera.main.WorldToScreenPoint(renderer.transform.TransformPoint(corner));
+                min = Vector2.Min(min, screen);
+                max = Vector2.Max(max, screen);
+            }
+            float padding = Mathf.Max(10f, Camera.main.pixelHeight / 90f);
+            Vector2 half = (max - min) * .5f;
+            Vector2 offset = mouse - (min + max) * .5f;
+            float score = Mathf.Max(Mathf.Abs(offset.x) / (half.x + padding),
+                Mathf.Abs(offset.y) / (half.y + padding));
+            if (score > 1f) return;
+            if (score >= bestScore) return;
+            best = target; bestScore = score;
+        }
+
+        private static GameObject FindCustomNear(Vector3 point, float radius)
+        {
+            GameObject best = null;
+            float bestDistance = radius;
+            foreach (GameObject value in LiveSharedEntities())
+            {
+                if (value == null || value == Main.Player ||
+                    (Main.Player != null && value.transform.IsChildOf(Main.Player.transform))) continue;
+                float distance = Vector2.Distance(point, value.transform.position);
+                if (distance >= bestDistance) continue;
+                best = value; bestDistance = distance;
+            }
+            foreach (Damageable value in UnityEngine.Object.FindObjectsOfType<Damageable>())
+            {
+                if (value == null || value.IsDead || Main.Player == value.gameObject ||
+                    (Main.Player != null && value.transform.IsChildOf(Main.Player.transform))) continue;
+                float distance = Vector2.Distance(point, value.transform.position);
+                if (distance >= bestDistance) continue;
+                best = value.gameObject; bestDistance = distance;
+            }
+            foreach (MonoBehaviour value in UnityEngine.Object.FindObjectsOfType<MonoBehaviour>())
+            {
+                if (!IsForeignDamageable(value) || !IsAlive(value)) continue;
+                float distance = Vector2.Distance(point, value.transform.position);
+                if (distance >= bestDistance) continue;
+                best = value.gameObject; bestDistance = distance;
+            }
+            return best;
+        }
+
+        private static List<GameObject> SharedEntities()
+        {
+            var entities = AppDomain.CurrentDomain.GetData(EntityRegistryKey) as List<GameObject>;
+            if (entities != null) return entities;
+            entities = new List<GameObject>();
+            AppDomain.CurrentDomain.SetData(EntityRegistryKey, entities);
+            return entities;
+        }
+
+        private static GameObject[] LiveSharedEntities()
+        {
+            List<GameObject> entities = SharedEntities();
+            for (int i = entities.Count - 1; i >= 0; i--)
+                if (entities[i] == null) entities.RemoveAt(i);
+            return entities.ToArray();
+        }
+
+        private static GameObject FindCustomObject(GameObject target)
+        {
+            if (target == null) return null;
+            Damageable local = target.GetComponentInParent<Damageable>() ??
+                target.GetComponentInChildren<Damageable>();
+            if (local != null && !local.IsDead) return local.gameObject;
+            foreach (MonoBehaviour value in target.GetComponentsInParent<MonoBehaviour>(true))
+                if (IsForeignDamageable(value) && IsAlive(value)) return value.gameObject;
+            foreach (MonoBehaviour value in target.GetComponentsInChildren<MonoBehaviour>(true))
+                if (IsForeignDamageable(value) && IsAlive(value)) return value.gameObject;
+            return null;
+        }
+
+        private static bool TryDamageForeign(GameObject target, int amount, GameObject source,
+            out DamageResult result)
+        {
+            result = DamageResult.Missed;
+            MonoBehaviour damageable = null;
+            foreach (MonoBehaviour value in target.GetComponentsInParent<MonoBehaviour>(true))
+                if (IsForeignDamageable(value)) { damageable = value; break; }
+            if (damageable == null)
+                foreach (MonoBehaviour value in target.GetComponentsInChildren<MonoBehaviour>(true))
+                    if (IsForeignDamageable(value)) { damageable = value; break; }
+            if (damageable == null || !IsAlive(damageable)) return false;
+            try
+            {
+                MethodInfo method = damageable.GetType().GetMethod("TakeDamage",
+                    BindingFlags.Instance | BindingFlags.Public, null,
+                    new[] { typeof(int), typeof(GameObject) }, null);
+                object foreign = method == null ? null : method.Invoke(damageable, new object[] { amount, source });
+                if (foreign == null) return false;
+                Type type = foreign.GetType();
+                bool hit = (bool)type.GetProperty("Hit").GetValue(foreign, null);
+                int applied = (int)type.GetProperty("Amount").GetValue(foreign, null);
+                bool killed = (bool)type.GetProperty("Killed").GetValue(foreign, null);
+                result = new DamageResult(hit, applied, killed);
+                return true;
+            }
+            catch { return false; }
+        }
+
+        private static bool IsForeignDamageable(MonoBehaviour value)
+        {
+            return value != null && !(value is Damageable) &&
+                string.Equals(value.GetType().FullName, DamageableTypeName, StringComparison.Ordinal);
+        }
+
+        private static bool IsAlive(MonoBehaviour value)
+        {
+            try
+            {
+                PropertyInfo property = value.GetType().GetProperty("IsDead",
+                    BindingFlags.Instance | BindingFlags.Public);
+                return property != null && !(bool)property.GetValue(value, null);
+            }
+            catch { return false; }
         }
 
         private static Mob FindMobNear(Vector3 point, float radius)
@@ -456,6 +666,12 @@ namespace ISOCORE.ModSdk
         public WeaponBuilder Blast(float radius, float falloff = .75f)
         { _weapon.BlastRadius = radius; _weapon.BlastFalloff = falloff; return this; }
         public WeaponBuilder OnHit(Action<AttackHit> action) { _weapon.OnHit = action; return this; }
+        /// <summary>Sound played each time the weapon fires.</summary>
+        public WeaponBuilder FireSound(Sound sound) { _weapon.FireSound = sound; return this; }
+        /// <summary>Sound played when the projectile lands (e.g. an explosion).</summary>
+        public WeaponBuilder ImpactSound(Sound sound) { _weapon.ImpactSound = sound; return this; }
+        /// <summary>Sound played when the trigger is pulled with no ammo.</summary>
+        public WeaponBuilder EmptySound(Sound sound) { _weapon.EmptySound = sound; return this; }
         public void Register() { _combat.Register(_weapon); }
     }
 
@@ -473,6 +689,9 @@ namespace ISOCORE.ModSdk
         internal float BlastRadius;
         internal float BlastFalloff = .75f;
         internal Action<AttackHit> OnHit;
+        internal Sound FireSound;
+        internal Sound ImpactSound;
+        internal Sound EmptySound;
     }
 
     public sealed class AttackHit

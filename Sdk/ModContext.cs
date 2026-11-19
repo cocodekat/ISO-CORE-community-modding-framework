@@ -28,8 +28,10 @@ namespace ISOCORE.ModSdk
             Assets = new AssetsApi(assembly, log, modId);
             Content = new ContentApi(modId, log);
             Combat = new CombatApi(modId, host, log);
+            Audio = new SoundApi(assembly, modId, log);
             Paths = new PathfindingApi();
             World = new WorldApi(Combat, Paths);
+            Entities = new EntityApi(modId, host, Combat, Paths, log);
 #if ISOCORE_INVENTORY
             Inventory = new InventoryApi(log);
 #endif
@@ -44,8 +46,10 @@ namespace ISOCORE.ModSdk
         public AssetsApi Assets { get; }
         public ContentApi Content { get; }
         public CombatApi Combat { get; }
+        public SoundApi Audio { get; }
         public PathfindingApi Paths { get; }
         public WorldApi World { get; }
+        public EntityApi Entities { get; }
 
 #if ISOCORE_INVENTORY
         public InventoryApi Inventory { get; }
@@ -143,8 +147,10 @@ namespace ISOCORE.ModSdk
         protected AssetsApi Assets => Mod.Assets;
         protected ContentApi Content => Mod.Content;
         protected CombatApi Combat => Mod.Combat;
+        protected SoundApi Audio => Mod.Audio;
         protected PathfindingApi Paths => Mod.Paths;
         protected WorldApi World => Mod.World;
+        protected EntityApi Entities => Mod.Entities;
 #if ISOCORE_INVENTORY
         protected InventoryApi Inventory => Mod.Inventory;
 #endif

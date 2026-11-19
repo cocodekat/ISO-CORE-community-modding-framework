@@ -98,6 +98,39 @@ namespace ISOCORE.ModSdk
             return sprites.ToArray();
         }
 
+        /// <summary>
+        /// Slices an evenly arranged grid from top-left to bottom-right. Small remainder margins
+        /// are ignored, which makes generated or hand-packed sheets that are a pixel or two off
+        /// still usable.
+        /// </summary>
+        public Sprite[] SpriteGrid(string name, int columns, int rows,
+            float pixelsPerUnit = 16f, Vector2? pivot = null)
+        {
+            if (columns <= 0 || rows <= 0) throw new ArgumentOutOfRangeException("Grid dimensions must be positive.");
+            Texture2D texture = Texture(name);
+            int frameWidth = texture.width / columns;
+            int frameHeight = texture.height / rows;
+            if (frameWidth <= 0 || frameHeight <= 0)
+                throw new ArgumentException("Grid contains more cells than the texture has pixels.");
+            int marginX = (texture.width - frameWidth * columns) / 2;
+            int marginY = (texture.height - frameHeight * rows) / 2;
+            var sprites = new Sprite[columns * rows];
+            for (int row = 0; row < rows; row++)
+            for (int column = 0; column < columns; column++)
+            {
+                int index = row * columns + column;
+                int x = marginX + column * frameWidth;
+                int y = texture.height - marginY - (row + 1) * frameHeight;
+                Sprite sprite = UnityEngine.Sprite.Create(texture,
+                    new Rect(x, y, frameWidth, frameHeight), pivot ?? new Vector2(.5f, .08f),
+                    pixelsPerUnit, 0, SpriteMeshType.FullRect);
+                sprite.name = texture.name + " r" + row + " c" + column;
+                sprite.hideFlags = HideFlags.HideAndDontSave;
+                sprites[index] = sprite;
+            }
+            return sprites;
+        }
+
         private byte[] ReadOverride(string key)
         {
             string path = Path.GetFullPath(Path.Combine(_overrideDirectory, key));

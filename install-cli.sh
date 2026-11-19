@@ -18,8 +18,8 @@ fi
 printf '%s\n' "Using .NET: $DOTNET_BIN"
 
 "$DOTNET_BIN" pack "$SCRIPT_DIR/cli/ICCMF.Cli.csproj" -c Release --nologo
-"$DOTNET_BIN" tool update --global ICCMF.Cli --add-source "$SCRIPT_DIR/dist" --version 0.4.5 \
-  || "$DOTNET_BIN" tool install --global ICCMF.Cli --add-source "$SCRIPT_DIR/dist" --version 0.4.5
+"$DOTNET_BIN" tool update --global ICCMF.Cli --add-source "$SCRIPT_DIR/dist" --version 0.5.2 \
+  || "$DOTNET_BIN" tool install --global ICCMF.Cli --add-source "$SCRIPT_DIR/dist" --version 0.5.2
 
-printf '%s\n' "Installed iccmf 0.4.5."
+printf '%s\n' "Installed iccmf 0.5.2."
 printf '%s\n' "If 'iccmf' is not found, add \$HOME/.dotnet/tools to PATH."

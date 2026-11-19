@@ -1,0 +1,5 @@
+is_global = true
+build_property.RootNamespace = ZombieSurvival
+build_property.ProjectDir = /Users/philip/Desktop/Code/mods/modding-api/projects/ZombieSurvival/
+build_property.EnableComHosting = 
+build_property.EnableGeneratedComInterfaceComImportInterop = 

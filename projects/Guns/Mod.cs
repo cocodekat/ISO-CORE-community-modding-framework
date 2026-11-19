@@ -67,7 +67,8 @@ namespace Guns
                 second: Items.Copper,
                 secondAmount: 1,
                 third: Items.wood,
-                thirdAmount: 1);
+                thirdAmount: 1,
+                shot: DefaultSound.Pistol);
 
             CreateWeapon(
                 key: "smg",
@@ -84,7 +85,8 @@ namespace Guns
                 second: Items.Copper,
                 secondAmount: 2,
                 third: Items.Leather,
-                thirdAmount: 1);
+                thirdAmount: 1,
+                shot: DefaultSound.Smg);
 
             CreateWeapon(
                 key: "rifle",
@@ -101,7 +103,8 @@ namespace Guns
                 second: Items.Iron,
                 secondAmount: 2,
                 third: Items.wood,
-                thirdAmount: 2);
+                thirdAmount: 2,
+                shot: DefaultSound.Rifle);
 
             CreateWeapon(
                 key: "sniper",
@@ -119,6 +122,7 @@ namespace Guns
                 secondAmount: 2,
                 third: Items.Leather,
                 thirdAmount: 2,
+                shot: DefaultSound.Sniper,
                 steelAmmo: true);
 
             CreateWeapon(
@@ -137,6 +141,7 @@ namespace Guns
                 secondAmount: 2,
                 third: Items.wood,
                 thirdAmount: 2,
+                shot: DefaultSound.Rocket,
                 bazooka: true);
         }
 
@@ -156,6 +161,7 @@ namespace Guns
             int secondAmount,
             Items third,
             int thirdAmount,
+            DefaultSound shot,
             bool steelAmmo = false,
             bool bazooka = false)
         {
@@ -184,13 +190,16 @@ namespace Guns
                 .Damage(damage)
                 .Range(range)
                 .Cooldown(cooldown)
-                .Automatic(automatic);
+                .Automatic(automatic)
+                .FireSound(Audio.Default(shot))
+                .EmptySound(Audio.Default(DefaultSound.EmptyClick));
 
             if (bazooka)
             {
                 attack
                     .Projectile(_rocket, speed: 12f, scale: 1f)
-                    .Blast(radius: 2f, falloff: .75f);
+                    .Blast(radius: 2f, falloff: .75f)
+                    .ImpactSound(Audio.Default(DefaultSound.Explosion));
             }
             else
             {
